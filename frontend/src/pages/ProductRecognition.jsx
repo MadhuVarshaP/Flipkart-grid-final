@@ -37,7 +37,9 @@ const ProductRecognition = () => {
     <div className="text-white max-h-screen py-10 font-poppins">
       <div className="max-w-4xl mx-auto text-center">
         {/* Header Section */}
-        <h1 className="text-4xl font-bold mb-4">Product Recognition</h1>
+        <h1 className="text-4xl font-bold mb-4 text-blue-800">
+          Product Recognition
+        </h1>
         <p className="text-lg italic mb-6">
           "Upload a folder containing product images, and let AI predict their
           brand."
