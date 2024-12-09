@@ -23,12 +23,17 @@ const FreshnessDetection = () => {
     formData.append("image", image);
 
     try {
-      const response = await fetch("/detect-freshness", {
+      const response = await fetch("http://localhost:5000/detect-freshness", {
         method: "POST",
         body: formData
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to process the image.");
+      }
+
       const data = await response.json();
-      setResult(data.status || "Freshness check completed.");
+      setResult(data.detections || []);
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to process the image. Please try again.");
@@ -42,16 +47,16 @@ const FreshnessDetection = () => {
       <div className="max-w-4xl mx-auto text-center">
         {/* Header Section */}
         <h1 className="text-4xl font-bold mb-4 text-blue-800">
-          Fruits Freshness Detection
+          Freshness Detection
         </h1>
         <p className="text-lg italic mb-6">
-          "Ensure the quality of your fruits with our AI-powered freshness
-          detection tool."
+          "Ensure the quality of your real-world objects with our AI-powered
+          freshness detection tool."
         </p>
 
         {/* Instructions Section */}
         <p className="text-lg mb-4">
-          Upload an image of your fruit to analyze its freshness.
+          Upload an image of your real-world object to analyze its freshness.
         </p>
 
         {/* Image Upload Section */}
@@ -60,7 +65,7 @@ const FreshnessDetection = () => {
             htmlFor="image-upload"
             className="block text-lg font-medium mb-4"
           >
-            Upload Fruit Image
+            Upload an Image
           </label>
           <input
             type="file"
@@ -89,10 +94,15 @@ const FreshnessDetection = () => {
         {/* Result Display */}
         {result &&
           <div className="mt-10 p-6 bg-white text-gray-800 rounded-lg shadow-md max-w-3xl mx-auto">
-            <h2 className="text-2xl font-semibold mb-2">Detection Result</h2>
-            <p className="text-lg">
-              {result}
-            </p>
+            <h2 className="text-2xl font-semibold mb-2">Detection Results</h2>
+            <ul>
+              {result.map((detection, index) =>
+                <li key={index} className="text-lg">
+                  <strong>{detection.product}</strong> ({detection.freshness}) -
+                  Confidence: {detection.confidence.toFixed(2)}
+                </li>
+              )}
+            </ul>
           </div>}
       </div>
 
@@ -105,7 +115,7 @@ const FreshnessDetection = () => {
               Real-Time Detection
             </h3>
             <p className="text-gray-600 group-hover:text-gray-900">
-              Analyze fruit quality instantly with cutting-edge AI models.
+              Analyze object quality instantly with cutting-edge AI models.
             </p>
           </div>
 

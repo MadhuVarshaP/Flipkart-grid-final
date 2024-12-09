@@ -26,7 +26,7 @@ const ProductRecognition = () => {
         body: formData
       });
       const data = await response.json();
-      setResult(data);
+      setResult(data); // Set the result from backend
     } catch (error) {
       console.error("Error:", error);
       alert("Prediction failed.");
@@ -90,6 +90,9 @@ const ProductRecognition = () => {
                   </h3>
                   <p>
                     {item.description || "No description available."}
+                  </p>
+                  <p>
+                    <strong>Confidence:</strong> {item.confidence}
                   </p>
                 </li>
               )}
