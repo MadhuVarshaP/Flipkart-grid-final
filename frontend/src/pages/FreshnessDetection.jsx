@@ -21,29 +21,36 @@ const FreshnessDetection = () => {
 
     const formData = new FormData();
     formData.append("image", image);
-
     try {
       const response = await fetch("http://localhost:5000/detect-freshness", {
         method: "POST",
-        body: formData
+        body: formData,
       });
-
+    
+    
       if (!response.ok) {
+        console.error("Response not OK", response.statusText);
         throw new Error("Failed to process the image.");
       }
-
+    
       const data = await response.json();
-      setResult(data.detections || []);
+      console.log("Backend Response:", data); // Debug response
+      if (data.detections) {
+        setResult(data.detections);
+      } else {
+        console.error("No detections in response:", data);
+        alert("No detections found in the response.");
+      }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error in handleSubmit:", error);
       alert("Failed to process the image. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }    
 
   return (
-    <div className="text-white max-h-screen py-10 font-poppins">
+    <div className="text-white min-h-screen py-10 font-poppins">
       <div className="max-w-4xl mx-auto text-center">
         {/* Header Section */}
         <h1 className="text-4xl font-bold mb-4 text-blue-800">

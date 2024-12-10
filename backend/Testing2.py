@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 import numpy as np
 import tensorflow as tf
@@ -9,6 +10,7 @@ import pandas as pd
 from datetime import datetime
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the saved model
 model_path = 'my_model.keras'
@@ -29,6 +31,29 @@ def preprocess_image(img_path):
     img_array /= 255.0  # Normalize pixel values
     return img_array
 
+# Ensure the uploads directory exists
+os.makedirs("uploads", exist_ok=True)
+
+# File path for the Excel sheet
+excel_file_path = "product_predictions.xlsx"
+
+# Create or load the Excel file
+def initialize_excel():
+    if not os.path.exists(excel_file_path):
+        df = pd.DataFrame(columns=['S. No.', 'File Name', 'Predicted Brand', 'Timestamp'])
+        df.to_excel(excel_file_path, index=False)
+
+# Function to update Excel with new data
+def update_excel(data):
+    if os.path.exists(excel_file_path):
+        df = pd.read_excel(excel_file_path)
+    else:
+        df = pd.DataFrame(columns=['S. No.', 'File Name', 'Predicted Brand', 'Timestamp'])
+
+    new_row = pd.DataFrame(data, columns=df.columns)
+    df = pd.concat([df, new_row], ignore_index=True)
+    df.to_excel(excel_file_path, index=False)
+
 # Prediction API
 @app.route('/predict-folder', methods=['POST'])
 def predict_folder():
@@ -37,9 +62,10 @@ def predict_folder():
 
     images = request.files.getlist('images')
     results = []
+    excel_data = []
 
     # Loop through each file
-    for img_file in images:
+    for idx, img_file in enumerate(images, start=1):
         filename = secure_filename(img_file.filename)
         file_path = os.path.join('uploads', filename)
         img_file.save(file_path)
@@ -55,20 +81,31 @@ def predict_folder():
         # Get current time
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Store result
+        # Prediction result
         result = {
-            'predicted_brand': predicted_label,
-            'confidence': f"{np.max(predictions[0]) * 100:.2f}%",
-            'description': "Description for the product."  # Optional description
+            'predicted_brand': predicted_label
+
         }
         results.append(result)
+
+        # Prepare data for Excel
+        excel_data.append([
+            len(results),  # S. No.
+            filename,  # File Name
+            predicted_label,  # Predicted Brand
+            current_time  # Timestamp
+        ])
 
         # Clean up the uploaded file (optional)
         os.remove(file_path)
 
+    # Update Excel
+    update_excel(excel_data)
+
     return jsonify(results)
 
 if __name__ == '__main__':
+    initialize_excel()
     app.run(debug=True)
 
 

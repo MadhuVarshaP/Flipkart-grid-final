@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import cv2
 from ultralytics import YOLO
 import openpyxl
@@ -6,6 +7,7 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the YOLO model
 model_path = 'Freshnew100.pt'  # Path to your .pt model file
@@ -62,57 +64,66 @@ def update_fresh_count(product, is_fresh):
 # Route for handling freshness detection
 @app.route('/detect-freshness', methods=['POST'])
 def detect_freshness():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
 
-    image_file = request.files['image']
-    image_path = os.path.join("uploads", image_file.filename)
+        image_file = request.files['image']
+        uploads_dir = "uploads"
+        os.makedirs(uploads_dir, exist_ok=True)  # Ensure the directory exists
+        image_path = os.path.join(uploads_dir, image_file.filename)
 
-    # Save the image temporarily
-    image_file.save(image_path)
+        # Save the image temporarily
+        image_file.save(image_path)
 
-    # Process the image using YOLO
-    image = cv2.imread(image_path)
-    if image is None:
-        return jsonify({"error": "Error reading image"}), 400
+        # Process the image using YOLO
+        image = cv2.imread(image_path)
+        if image is None:
+            return jsonify({"error": "Error reading image"}), 400
 
-    results = model(image)
-    detection_results = []
+        results = model(image)
+        detection_results = []
 
-    for result in results:
-        boxes = result.boxes.xyxy  # Bounding box coordinates
-        confidences = result.boxes.conf  # Confidence scores
-        labels = result.boxes.cls  # Class indices
+        for result in results:
+            boxes = result.boxes.xyxy  # Bounding box coordinates
+            confidences = result.boxes.conf  # Confidence scores
+            labels = result.boxes.cls  # Class indices
 
-        for i, box in enumerate(boxes):
-            confidence = confidences[i].item()
-            if confidence < CONFIDENCE_THRESHOLD:
-                continue  # Skip low-confidence predictions
+            for i, box in enumerate(boxes):
+                confidence = confidences[i].item()
+                if confidence < CONFIDENCE_THRESHOLD:
+                    continue  # Skip low-confidence predictions
 
-            x1, y1, x2, y2 = map(int, box)
-            label_idx = int(labels[i])
-            predicted_label = label_encoder[label_idx]
-            product, freshness = predicted_label.split('_')
+                x1, y1, x2, y2 = map(int, box)
+                label_idx = int(labels[i])
+                predicted_label = label_encoder[label_idx]
+                product, freshness = predicted_label.split('_')
 
-            # Update fresh count in Excel
-            is_fresh = (freshness == "fresh")
-            update_fresh_count(product, is_fresh)
+                # Update fresh count in Excel
+                is_fresh = (freshness == "fresh")
+                update_fresh_count(product, is_fresh)
 
-            # Append result for the frontend
-            detection_results.append({
-                "product": product,
-                "freshness": freshness,
-                "confidence": confidence,
-                "bbox": [x1, y1, x2, y2]
-            })
+                # Append result for the frontend
+                detection_results.append({
+                    "product": product,
+                    "freshness": freshness,
+                    "confidence": confidence,
+                    "bbox": [x1, y1, x2, y2]
+                })
 
-    # Save the workbook
-    workbook.save(excel_file)
+        # Save the workbook
+        workbook.save(excel_file)
 
-    return jsonify({
-        "status": "Freshness detection completed",
-        "detections": detection_results
-    })
+        return jsonify({
+            "status": "Freshness detection completed",
+            "detections": detection_results
+        })
+
+    except Exception as e:
+        print(f"Error in detect_freshness route: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

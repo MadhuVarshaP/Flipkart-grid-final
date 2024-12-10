@@ -47,7 +47,7 @@ const ExpiryDateRecognition = () => {
   };
 
   return (
-    <div className="text-white max-h-screen py-10 font-poppins">
+    <div className="text-white min-h-screen py-10 font-poppins">
       <div className="max-w-4xl mx-auto text-center">
         {/* Header Section */}
         <h1 className="text-4xl font-bold mb-4 text-blue-800">

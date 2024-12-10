@@ -9,7 +9,7 @@ import ExpiryDateRecognition from "./pages/ExpiryDateRecognition";
 
 function App() {
   return (
-    <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 h-screen font-poppins">
+    <div className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 font-poppins">
     <Router>
       <Navbar />
       <Routes>

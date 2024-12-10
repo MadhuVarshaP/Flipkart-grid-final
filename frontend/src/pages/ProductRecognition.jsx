@@ -21,7 +21,7 @@ const ProductRecognition = () => {
     });
 
     try {
-      const response = await fetch("/predict-folder", {
+      const response = await fetch("http://localhost:5000/predict-folder", {
         method: "POST",
         body: formData
       });
@@ -34,7 +34,7 @@ const ProductRecognition = () => {
   };
 
   return (
-    <div className="text-white max-h-screen py-10 font-poppins">
+    <div className="text-white min-h-screen py-10 font-poppins">
       <div className="max-w-4xl mx-auto text-center">
         {/* Header Section */}
         <h1 className="text-4xl font-bold mb-4 text-blue-800">
@@ -90,12 +90,7 @@ const ProductRecognition = () => {
                   <h3 className="text-xl font-bold text-green-500">
                     {item.predicted_brand}
                   </h3>
-                  <p>
-                    {item.description || "No description available."}
-                  </p>
-                  <p>
-                    <strong>Confidence:</strong> {item.confidence}
-                  </p>
+                
                 </li>
               )}
             </ul>

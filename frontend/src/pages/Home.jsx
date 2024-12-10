@@ -6,7 +6,7 @@ import expiry from "../images/expiry.png";
 
 const Home = () => {
   return (
-    <div className=" text-white font-poppins max-h-screen ">
+    <div className=" text-white font-poppins min-h-screen ">
       <header className="py-20 px-8">
         <div className="max-w-5xl mx-auto text-center">
           <h1 className="text-5xl font-bold">
