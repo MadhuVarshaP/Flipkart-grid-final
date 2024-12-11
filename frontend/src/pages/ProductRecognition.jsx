@@ -33,6 +33,33 @@ const ProductRecognition = () => {
     }
   };
 
+  const handleDownloadExcel = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/download-excel", {
+        method: "GET"
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to download the Excel file");
+      }
+
+      // Create a blob from the response
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a link element to trigger the download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "product_predictions.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove(); // Clean up the link element
+    } catch (error) {
+      console.error("Error downloading Excel:", error);
+      alert("Failed to download the Excel file.");
+    }
+  };
+
   return (
     <div className="text-white min-h-screen py-10 font-poppins">
       <div className="max-w-4xl mx-auto text-center">
@@ -90,11 +117,19 @@ const ProductRecognition = () => {
                   <h3 className="text-xl font-bold text-green-500">
                     {item.predicted_brand}
                   </h3>
-                
                 </li>
               )}
             </ul>
           </div>}
+        {/* Download Excel Button */}
+        <div className="mt-6">
+          <button
+            onClick={handleDownloadExcel}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-md font-semibold hover:bg-green-600 transition"
+          >
+            Download Excel file
+          </button>
+        </div>
       </div>
 
       {/* Features Section */}

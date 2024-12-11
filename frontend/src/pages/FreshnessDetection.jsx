@@ -24,15 +24,14 @@ const FreshnessDetection = () => {
     try {
       const response = await fetch("http://localhost:5000/detect-freshness", {
         method: "POST",
-        body: formData,
+        body: formData
       });
-    
-    
+
       if (!response.ok) {
         console.error("Response not OK", response.statusText);
         throw new Error("Failed to process the image.");
       }
-    
+
       const data = await response.json();
       console.log("Backend Response:", data); // Debug response
       if (data.detections) {
@@ -47,7 +46,35 @@ const FreshnessDetection = () => {
     } finally {
       setLoading(false);
     }
-  }    
+  };
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/download-excel", {
+        method: "GET"
+      });
+
+      if (!response.ok) {
+        console.error("Failed to download the file:", response.statusText);
+        alert("Failed to download the file. Please try again.");
+        return;
+      }
+
+      // Create a blob and download the file
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "detection_fresh_count.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error in handleDownload:", error);
+      alert("Failed to download the file. Please try again.");
+    }
+  };
 
   return (
     <div className="text-white min-h-screen py-10 font-poppins">
@@ -111,6 +138,14 @@ const FreshnessDetection = () => {
               )}
             </ul>
           </div>}
+        <div className="mt-6">
+          <button
+            onClick={handleDownload}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg shadow-lg font-semibold hover:bg-blue-600 transition"
+          >
+            Download Excel file
+          </button>
+        </div>
       </div>
 
       {/* Features Section */}

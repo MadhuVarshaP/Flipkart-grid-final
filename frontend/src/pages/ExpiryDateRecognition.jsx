@@ -45,6 +45,29 @@ const ExpiryDateRecognition = () => {
       alert("Failed to recognize expiry date. " + error.message);
     }
   };
+  const handleDownloadExcel = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/download-excel", {
+        method: "GET"
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to download the file.");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Expiry_Brand_Details.xlsx"; // Specify file name
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      alert("Failed to download the file. " + error.message);
+    }
+  };
 
   return (
     <div className="text-white min-h-screen py-10 font-poppins">
@@ -134,6 +157,12 @@ const ExpiryDateRecognition = () => {
               </div>
             </div>
           </div>}
+        <button
+          onClick={handleDownloadExcel}
+          className="mt-6 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-md font-semibold hover:bg-blue-600 transition"
+        >
+          Download Excel File
+        </button>
       </div>
       {/* Features Section */}
       <section className="mt-16 px-6">
